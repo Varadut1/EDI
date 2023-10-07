@@ -65,7 +65,7 @@ public class clienthandler implements Runnable{
                     if (file.isFile()) {
                         try {
                             String fileName = file.getName();
-                            System.out.println(fileName);
+                            // System.out.println(fileName);
                             names[i++] = fileName;
                         } 
                         catch (Exception e) {
@@ -119,6 +119,7 @@ public class clienthandler implements Runnable{
             }
             fos = new FileOutputStream(new File(folder,info[3]+info[0]));
             fos.write(content);
+            fos.close();
         }
         catch(Exception e){
             e.printStackTrace();
