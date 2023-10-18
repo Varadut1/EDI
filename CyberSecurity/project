@@ -4,7 +4,7 @@ from tkinter import messagebox
 from PIL import ImageTk
 from PIL import Image
 from io import BytesIO
-from help import key
+from help import key;
 import getpass
 import os
 import random
@@ -42,7 +42,7 @@ class EncProj:
         frame = Frame(root)
         frame.grid()
 
-        title = Label(frame, text='Image Steganography')
+        title = Label(frame, text='Multimedia Security')
         title.config(font=('Times new roman', 23, 'bold'))
         title.grid(pady=10)
         title.config(bg='#e3f4f1')
@@ -76,6 +76,14 @@ class EncProj:
         decryptAudio.config(font=('Helvetica', 14), bg='#e8c1c7')
         decryptAudio.grid(pady=12, row=7)
 
+        encryptFile = Button(frame, text="encryptFile", command=lambda: self.encryptFile(frame), padx=14, bg='#e3f4f1')
+        encryptFile.config(font=('Helvetica', 14), bg='#e8c1c7')
+        encryptFile.grid(row=8)
+
+        decryptFile = Button(frame, text="decryptFile", command=lambda: self.decryptFile(frame), padx=14, bg='#e3f4f1')
+        decryptFile.config(font=('Helvetica', 14), bg='#e8c1c7')
+        decryptFile.grid(pady=12, row=9)
+
         root.grid_rowconfigure(1, weight=1)
         root.grid_columnconfigure(0, weight=1)
 
@@ -84,6 +92,74 @@ class EncProj:
     def back(self,frame):
         frame.destroy()
         self.main(root)
+
+
+    def encryptFile(self, F):
+        F.destroy()
+        myfile = tkinter.filedialog.askopenfilename(filetypes=[('All Files', '*.*')])
+        if not myfile:
+            messagebox.showerror("Error", "You have selected nothing!")
+        else:
+            encrypted_filename = tkinter.filedialog.asksaveasfilename(defaultextension=".enc")
+            if not encrypted_filename:
+                messagebox.showerror("Error", "You have not provided a filename for the encrypted file!")
+            else:
+                password = "my_password"
+
+                with open(myfile, 'rb') as file:
+                    file_data = file.read()
+
+                encrypted_data = self.xor_encrypt(file_data, password)
+
+                with open(encrypted_filename, 'wb') as file:
+                    file.write(encrypted_data)
+
+                messagebox.showinfo("Success", "Encryption Successful\nEncrypted file is saved as {}".format(encrypted_filename))
+
+    def xor_encrypt(self, data, password):
+        encrypted_data = bytearray()
+        password_length = len(password)
+
+        for i, byte in enumerate(data):
+            encrypted_byte = byte ^ ord(password[i % password_length])
+            encrypted_data.append(encrypted_byte)
+
+        return encrypted_data
+
+    def decryptFile(self, F):
+        F.destroy()
+        myfile = tkinter.filedialog.askopenfilename(filetypes=[('All Files', '*.*')])
+        if not myfile:
+            messagebox.showerror("Error", "You have selected nothing!")
+        else:
+            decrypted_filename = tkinter.filedialog.asksaveasfilename(defaultextension=".dec")
+            if not decrypted_filename:
+                messagebox.showerror("Error", "You have not provided a filename for the decrypted file!")
+            else:
+                password = "my_password"
+
+                with open(myfile, 'rb') as file:
+                    file_data = file.read()
+
+                decrypted_data = self.xor_decrypt(file_data, password)
+
+                with open(decrypted_filename, 'wb') as file:
+                    file.write(decrypted_data)
+
+                messagebox.showinfo("Success", "Decryption Successful\nDecrypted file is saved as {}".format(decrypted_filename))
+
+    def xor_decrypt(self, data, password):
+        decrypted_data = bytearray()
+        password_length = len(password)
+
+        for i, byte in enumerate(data):
+            decrypted_byte = byte ^ ord(password[i % password_length])
+            decrypted_data.append(decrypted_byte)
+
+        return decrypted_data
+
+
+
 
     def encryptImage_frame1(self, F):
         F.destroy()
@@ -168,7 +244,6 @@ class EncProj:
                         decrypted_img[i][j][k] = pixel_value
 
         return Image.fromarray(decrypted_img.astype(np.uint8))
-
 
 
     #for audio
