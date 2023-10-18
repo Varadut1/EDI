@@ -1,35 +1,20 @@
 from tkinter import *
 import tkinter.filedialog
 from tkinter import messagebox
-from PIL import ImageTk
-from PIL import Image
+from PIL import ImageTk, Image
 from io import BytesIO
-from help import key;
-import getpass
 import os
-import random
-import sys
-from datetime import datetime
-from itertools import cycle 
-from help import password
 import numpy as np
 from scipy.io import wavfile
-import  os
-import wave
-import matplotlib.pyplot as plt,numpy as np,random
-from numpy import zeros
-
-# Another file where you use the AudioCrypt classs
 from audio import AudioCrypt
-
-
+from keyPass import key,password
 
 class EncProj:
     output_image_size = 0
 
     # - main frame or start page
     def main(self, root):
-        root.title('Encryption by Grp 1')
+        root.title('Multimedia Encryption')
         screen_width = root.winfo_screenwidth()
         screen_height = root.winfo_screenheight()
         window_width = 600
@@ -104,7 +89,6 @@ class EncProj:
             if not encrypted_filename:
                 messagebox.showerror("Error", "You have not provided a filename for the encrypted file!")
             else:
-                password = "my_password"
 
                 with open(myfile, 'rb') as file:
                     file_data = file.read()
@@ -136,7 +120,6 @@ class EncProj:
             if not decrypted_filename:
                 messagebox.showerror("Error", "You have not provided a filename for the decrypted file!")
             else:
-                password = "my_password"
 
                 with open(myfile, 'rb') as file:
                     file_data = file.read()
@@ -205,7 +188,7 @@ class EncProj:
     def decryptImage_frame1(self, F):
         F.destroy()
         d_F2 = Frame(root)
-        label1 = Label(d_F2, text='Select Image with Hidden text:')
+        label1 = Label(d_F2, text='Select Image to decrypt: ')
         label1.config(font=('Times new roman', 25, 'bold'), bg='#e3f4f1')
         label1.grid()
         button_bws = Button(d_F2, text='Select', command=lambda: [self.decryptImage(d_F2),EncProj.back(self,d_F2)])
