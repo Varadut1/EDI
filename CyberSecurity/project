@@ -20,7 +20,7 @@ import matplotlib.pyplot as plt,numpy as np,random
 from numpy import zeros
 
 # Another file where you use the AudioCrypt classs
-from b import AudioCrypt
+from audio import AudioCrypt
 
 
 
