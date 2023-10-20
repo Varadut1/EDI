@@ -1,12 +1,14 @@
 import java.io.*;
 import java.net.*;
 import java.nio.file.Files;
+import java.util.*;
 import java.nio.file.Paths;
 
 public class udpserverhandler implements Runnable {
     static private InetAddress clientAddress;
     static private int clientPort;
     private String request;
+    static FileOutputStream fos;
     static private DatagramSocket udpsocket;
     static private DatagramPacket receivePacket;
     static private DatagramPacket sendPacket; 
@@ -49,12 +51,13 @@ public class udpserverhandler implements Runnable {
                     baos.write(strBytes);
                 }
                 byte[] newheaders = baos.toByteArray();
-                sendPacket = new DatagramPacket(newheaders, newheaders.length, InetAddress.getByName("192.168.43.218"), clientPort);
+                sendPacket = new DatagramPacket(newheaders, newheaders.length, InetAddress.getByName("192.168.0.104"), clientPort);
                 udpsocket.send(sendPacket);
                 byte[] fileData = Files.readAllBytes(Paths.get("serverfiles/"+filename));
             
             int packetSize = 1024; // Adjust the packet size as needed
             int totalPackets = (fileData.length + packetSize - 1) / packetSize;
+            long startTime = System.currentTimeMillis();           ///
             for (int packetNumber = 0; packetNumber < totalPackets; packetNumber++) {
                 int offset = packetNumber * packetSize;
                 int length = Math.min(packetSize, fileData.length - offset);
@@ -69,6 +72,9 @@ public class udpserverhandler implements Runnable {
                 // Add a delay or sleep if needed to control the sending rate
                 // Thread.sleep(10); // Milliseconds
             }
+            long endTime = System.currentTimeMillis();
+            System.out.println("Throughput: "+(fileSizeInBytes*8)/((endTime-startTime)/1000.0));
+            System.out.println("Latency: "+(endTime-startTime)/(double)(totalPackets));
             } 
             catch (IOException e) {
                 e.printStackTrace();
@@ -83,8 +89,75 @@ public class udpserverhandler implements Runnable {
 
     void receiveviaudp(int port){
         System.out.println("receiving via udp");
-        
+        Scanner input = new Scanner(System.in);
+        try{
+            // byte[] receiveData = new byte[1024];
+            // DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
+            // System.out.println("Here");
+            // udpsocket.receive(receivePacket);
+            // System.out.println("Here");
+            // // Deserialize the received data
+            // ByteArrayInputStream bais = new ByteArrayInputStream(receivePacket.getData());
+            // ObjectInputStream ois = new ObjectInputStream(bais);
+            // byte[][] names = (byte[][]) ois.readObject();
+            // int n = 1;
+            // for(byte[] i : names){
+            //     System.out.println((n++)+". "+new String(i, "UTF-8"));
+            // }
+            // System.out.print("Enter the name of the file: ");
+            // String file = input.nextLine();
+            // byte[] filename = file.getBytes();
+            // DatagramPacket newpacket = new DatagramPacket(filename, filename.length, serverAddress, port);
+            // udpsocket.send(newpacket);
+
+    
+            byte[] headerData = new byte[1024];  // Adjust the buffer size as needed
+            DatagramPacket headerPacket = new DatagramPacket(headerData, headerData.length);
+            udpsocket.receive(headerPacket);
+            
+            // // Extract the header data as a string
+            String headerInfo = new String(headerPacket.getData(),0, headerPacket.getLength(), "UTF-8");
+            String[] header = headerInfo.split(" ");
+            String file = headerInfo;
+            for(String i : header){
+                System.out.println(i);
+            }
+            System.out.println(header[0]);
+            byte[] receivedData = new byte[1024]; // Adjust the buffer size as needed
+            DatagramPacket receivedPacket = new DatagramPacket(receivedData, receivedData.length);
+            
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            
+            while (true) {
+                udpsocket.receive(receivedPacket);
+                byte[] packetData = receivedPacket.getData();
+                outputStream.write(packetData, 0, receivedPacket.getLength());
+                
+                // Check for end-of-file marker or other termination conditions
+                if (receivedPacket.getLength() < receivedData.length) {
+                    break;
+                }
+            }
+            
+            // Save the received data to a file
+            byte[] fileData = outputStream.toByteArray();
+            System.out.print("Enter the the name of file you would like to save:- ");
+
+            File folder = new File("serverfiles");
+            // Check if the folder exists; if not, create it
+            if (!folder.exists()) {
+                folder.mkdirs(); 
+            }
+
+            fos = new FileOutputStream(new File(folder, input.next()+"."+file.split("\\.")[1]));
+            fos.write(fileData);
+        }
+        catch(Exception e){
+            e.printStackTrace(); 
+        }
     }
+
+
     void sendviaudp(int port){
         System.out.println("sending via udp");
         try{
@@ -111,7 +184,8 @@ public class udpserverhandler implements Runnable {
                 oos.writeObject(names);
                 byte[] serializedData = baos.toByteArray();
                 byte[] filename = new byte[1024];
-                sendPacket = new DatagramPacket(serializedData, serializedData.length, InetAddress.getByName("192.168.43.218"), port);
+                sendPacket = new DatagramPacket(serializedData, serializedData.length, InetAddress.getByName("192.168.0.104"), port);
+                System.out.println("sending packet wait....");
                 udpsocket.send(sendPacket);
                 DatagramPacket newpack = new DatagramPacket(filename, filename.length);
                 udpsocket.receive(newpack);
