@@ -5,7 +5,7 @@ public class newserver {
     public static void main(String[] args) {
         try {
             // Create a ServerSocket and bind it to a port
-            InetAddress serverAddress = InetAddress.getByName("192.168.0.103"); // Replace with the desired IP address
+            InetAddress serverAddress = InetAddress.getByName("192.168.0.104"); // Replace with the desired IP address
             ServerSocket serversocket = new ServerSocket(Integer.parseInt(args[0]), 0, serverAddress); // Change the port as needed
             System.out.println("Server is running and waiting for connections...");
             

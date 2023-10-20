@@ -11,17 +11,12 @@ public class clienthandler implements Runnable{
 
     private static FileOutputStream fos;
     private static FileInputStream fis;
-    //UDP
-    private static DatagramSocket udpsocket;
-    private static DatagramPacket receivepacket;
-    private static DatagramPacket sendpacket; 
-
-    private static byte[] buffer; 
 
     private static Scanner input;
+    private static int mtu;
+    private static int tcpHeaderSize = 20;
 
-    private static int port;
-    
+    private static int port; 
 
     public clienthandler(Socket socket, int port, ServerSocket serversocket) {
         this.clientsocket = socket;
@@ -35,6 +30,18 @@ public class clienthandler implements Runnable{
         try{
             receive = new ObjectInputStream(clientsocket.getInputStream());
             send = new ObjectOutputStream(clientsocket.getOutputStream());
+            try {
+                NetworkInterface networkInterface = NetworkInterface.getByName("wlan1"); // Replace with your network interface name
+                if (networkInterface != null) {
+                    mtu = networkInterface.getMTU();
+                    System.out.println("MTU: " + mtu);
+                } else {
+                    System.out.println("Network interface not found.");
+                }
+            } catch (SocketException e) {
+                e.printStackTrace();
+            }
+            
             int command = (int)receive.readObject();
 
             if(command == 1){
@@ -42,6 +49,9 @@ public class clienthandler implements Runnable{
             } 
             else if(command == 2){
                 receiveviatcp(port);
+            }
+            else if(command ==3){
+                deleteviatcp(port);
             }
         }
         catch(Exception e){
@@ -91,9 +101,14 @@ public class clienthandler implements Runnable{
             header[2] = "B";
             System.out.println("Initial information: ");
             System.out.println("Extension: " + header[0]+" File size: "+header[1]+header[2]);
+            long totalNumberOfPackets = ((fileSizeInBytes+((mtu-tcpHeaderSize)-1))/(mtu-tcpHeaderSize));
+            long startTime = System.currentTimeMillis();
             send.writeObject(header);
-
             byte[] content = new byte[(int)file.length()];
+            long endTime = System.currentTimeMillis();
+            long total = endTime-startTime;
+            System.out.println("Throughput: "+(fileSizeInBytes*8)/(total/1000.0));
+            System.out.println("Latency: "+total/(double)totalNumberOfPackets);
             fis = new FileInputStream(file);
             fis.read(content);
             send.writeObject(content);
@@ -121,6 +136,58 @@ public class clienthandler implements Runnable{
             fos.write(content);
             fos.close();
         }
+        catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+    public static void deleteviatcp(int port){
+        System.out.println("receiving via tcp");
+        try{
+            System.out.println("deleting via tcp");
+            File directoryPath = new File("serverfiles");
+            File filesList[] = directoryPath.listFiles();
+            System.out.println("filesfound");
+            if (filesList != null) {
+                String[] names = new String[filesList.length];
+                int i = 0;
+            
+                for (File file : filesList) {
+                    if (file.isFile()) {
+                        try {
+                            String fileName = file.getName();
+                            // System.out.println(fileName);
+                            names[i++] = fileName;
+                        } 
+                        catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+                send.writeObject(names);
+            }
+            String filepath = (String)receive.readObject();
+            String[] header = new String[3];
+            header[0] = "."+filepath.split("\\.")[1];
+            File file = new File("serverfiles/"+filepath);
+            long fileSizeInBytes;
+            if(file.exists()){
+                file.delete();
+            }
+            else{
+                System.out.println("File not found");
+                return;
+            }
+            header[2] = "B";
+            System.out.println("Initial information: ");
+            System.out.println("Extension: " + header[0]+" File size: "+header[1]+header[2]+" deleted");
+            // send.writeObject(header);
+
+            // byte[] content = new byte[(int)file.length()];
+            // fis = new FileInputStream(file);
+            // fis.read(content);
+            // send.writeObject(content);
+        }
+        
         catch(Exception e){
             e.printStackTrace();
         }

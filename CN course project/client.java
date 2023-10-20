@@ -11,12 +11,15 @@ public class client {
     static DatagramSocket clientSocket;
     static InetAddress serverAddress;
     static FileOutputStream fos;
+    static private DatagramSocket udpsocket;
+    static private DatagramPacket receivePacket;
+    static private DatagramPacket sendPacket; 
     static Scanner input = new Scanner(System.in);
 
     public static void main(String[] args) {
         try{
             clientSocket = new DatagramSocket();
-            serverAddress = InetAddress.getByName("192.168.43.218");
+            serverAddress = InetAddress.getByName("192.168.0.104");
 
             // Prompt the user to choose between sending or receiving a file
             BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
@@ -51,6 +54,7 @@ public class client {
         try{
             byte[] receiveData = new byte[1024];
             DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
+            System.out.println("Here");
             clientSocket.receive(receivePacket);
             System.out.println("Here");
             // Deserialize the received data
@@ -62,6 +66,7 @@ public class client {
                 System.out.println((n++)+". "+new String(i, "UTF-8"));
             }
             System.out.print("Enter the name of the file: ");
+            
             String file = input.nextLine();
             byte[] filename = file.getBytes();
             DatagramPacket newpacket = new DatagramPacket(filename, filename.length, serverAddress, port);
@@ -115,5 +120,87 @@ public class client {
     }
     static void sendviaudp(int port){
         System.out.println("sending via udp");
+        // try{
+        //     File directoryPath = new File("serverfiles");
+        //     File filesList[] = directoryPath.listFiles();
+        //     System.out.println("filesfound");
+        //     if (filesList != null) {
+        //         byte[][] names = new byte[filesList.length][1024];
+        //         int i = 0;
+        //         for (File file : filesList){
+        //             if (file.isFile()) {
+        //                 try {
+        //                     byte[] fileName = file.getName().getBytes("UTF-8");
+        //                     System.out.println(file.getName());
+        //                     names[i++] = fileName;
+        //                 } 
+        //                 catch (Exception e) {
+        //                     e.printStackTrace();
+        //                 }
+        //             }
+        //         }
+        //         System.out.println("Enter file to send: ");
+        //         String filename = input.next();
+        //         String[] header = new String[4];
+        // header[0] = "."+filename.split("\\.")[1];
+        // File file = new File("serverfiles/"+filename);
+        // long fileSizeInBytes;
+        // if(file.exists()){
+        //     fileSizeInBytes = file.length();
+        //     header[1] = fileSizeInBytes+"";
+        //     header[2] = "B";
+        //     header[3] = filename;
+        //     System.out.println("Initial information: ");
+        //     System.out.println("Extension: " + header[0]+" File size: "+header[1]+header[2]);
+
+        //     ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            
+        //     try {
+        //         // for (String str : header) {
+        //         //     byte[] strBytes = str.getBytes("UTF-8"); 
+        //         //     baos.write(strBytes);
+        //         // }
+        //         byte[] filenameb = filename.getBytes();
+        //         DatagramPacket newpacket = new DatagramPacket(filenameb, filenameb.length, serverAddress, port);
+        //         udpsocket.send(newpacket);
+        //         byte[] newheaders = baos.toByteArray();
+        //         sendPacket = new DatagramPacket(newheaders, newheaders.length, InetAddress.getByName("192.168.0.104"), port);
+        //         udpsocket.send(sendPacket);
+        //         byte[] fileData = Files.readAllBytes(Paths.get("clientfiles/"+filename));
+            
+        //     int packetSize = 1024; // Adjust the packet size as needed
+        //     int totalPackets = (fileData.length + packetSize - 1) / packetSize;
+        //     for (int packetNumber = 0; packetNumber < totalPackets; packetNumber++) {
+        //         int offset = packetNumber * packetSize;
+        //         int length = Math.min(packetSize, fileData.length - offset);
+        //         byte[] packetData = new byte[length];
+        //         System.arraycopy(fileData, offset, packetData, 0, length);
+                
+        //         DatagramPacket packet = new DatagramPacket(packetData, length,  serverAddress, port);
+        //         udpsocket.send(packet);
+                
+        //         System.out.println("Sent packet " + (packetNumber + 1) + " of " + totalPackets);
+                
+        //         // Add a delay or sleep if needed to control the sending rate
+        //         // Thread.sleep(10); // Milliseconds
+        //     }
+        //     } 
+        //     catch (IOException e) {
+        //         e.printStackTrace();
+        //     }
+        // }
+        // else{
+        //     System.out.println("File not found");
+        //     return;
+        // }
+        //     }
+        // }
+        // catch(Exception e){
+        //     e.printStackTrace();
+        // }
     }
 }
+
+
+
+

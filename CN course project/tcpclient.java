@@ -16,11 +16,11 @@ public class tcpclient {
         InetAddress serverAddress;
         int port = Integer.parseInt(args[0]);
         try{
-            serverAddress = InetAddress.getByName("192.168.0.103"); 
+            serverAddress = InetAddress.getByName("192.168.0.104"); 
             clientsocket = new Socket(serverAddress, port);
             send = new ObjectOutputStream(clientsocket.getOutputStream());
             receive = new ObjectInputStream(clientsocket.getInputStream());
-            System.out.println("1. Receive file\n2. Send file");
+            System.out.println("1. Receive file\n2. Send file\n3. Delete file");
             int command = input.nextInt();
             send.writeObject(command);
             if(command == 1){
@@ -28,6 +28,9 @@ public class tcpclient {
             }
             else if(command == 2){
                 sendviatcp(port);
+            }
+            else if(command == 3){
+                deleteviatcp(port);
             }
         }
         catch(Exception e){
@@ -111,6 +114,37 @@ public class tcpclient {
             FileOutputStream fos = new FileOutputStream(new File(folder,input.next()+info[0]));
             fos.write(content);
             fos.close();
+        }
+        catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+    public static void deleteviatcp(int port){
+        try{
+            System.out.println("deleting via tcp");
+            String[] files = (String[])receive.readObject();
+            int num = 1;
+            for(String i : files){
+                System.out.println((num++)+". "+i);
+            }
+            System.out.println("Enter the name of file you want to delete: ");
+            String filename = input.next();
+            send.writeObject(filename);
+
+            // String[] info = (String[])receive.readObject();
+            // for(String information : info){
+            //     System.out.println(information);
+            // }
+            // byte[] content = (byte[])receive.readObject();
+
+            // File folder = new File("clientfiles");
+            // if (!folder.exists()) {
+            //     folder.mkdirs(); 
+            // }
+            // System.out.print("Enter the name you want to give the file: ");
+            // FileOutputStream fos = new FileOutputStream(new File(folder,input.next()+info[0]));
+            // fos.write(content);
+            // fos.close();
         }
         catch(Exception e){
             e.printStackTrace();
